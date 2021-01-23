@@ -14,6 +14,12 @@
    
       
       
+      ~FloatSpinBox.bind
+      
+      
+      ~FloatSpinBox.get_value
+      
+      
       ~FloatSpinBox.hide
       
       
@@ -24,6 +30,9 @@
       
       
       ~FloatSpinBox.shown
+      
+      
+      ~FloatSpinBox.unbind
       
    
    
@@ -36,15 +45,21 @@
    
       ~FloatSpinBox.annotation
       ~FloatSpinBox.enabled
+      ~FloatSpinBox.height
       ~FloatSpinBox.label
       ~FloatSpinBox.max
+      ~FloatSpinBox.max_height
+      ~FloatSpinBox.max_width
       ~FloatSpinBox.min
+      ~FloatSpinBox.min_height
+      ~FloatSpinBox.min_width
       ~FloatSpinBox.native
       ~FloatSpinBox.options
       ~FloatSpinBox.param_kind
       ~FloatSpinBox.parent
       ~FloatSpinBox.range
       ~FloatSpinBox.step
+      ~FloatSpinBox.tooltip
       ~FloatSpinBox.value
       ~FloatSpinBox.widget_type
       ~FloatSpinBox.width

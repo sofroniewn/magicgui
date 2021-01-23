@@ -14,6 +14,12 @@
    
       
       
+      ~TextEdit.bind
+      
+      
+      ~TextEdit.get_value
+      
+      
       ~TextEdit.hide
       
       
@@ -24,6 +30,9 @@
       
       
       ~TextEdit.shown
+      
+      
+      ~TextEdit.unbind
       
    
    
@@ -36,11 +45,18 @@
    
       ~TextEdit.annotation
       ~TextEdit.enabled
+      ~TextEdit.height
       ~TextEdit.label
+      ~TextEdit.max_height
+      ~TextEdit.max_width
+      ~TextEdit.min_height
+      ~TextEdit.min_width
       ~TextEdit.native
       ~TextEdit.options
       ~TextEdit.param_kind
       ~TextEdit.parent
+      ~TextEdit.read_only
+      ~TextEdit.tooltip
       ~TextEdit.value
       ~TextEdit.widget_type
       ~TextEdit.width

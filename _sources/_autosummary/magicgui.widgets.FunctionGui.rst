@@ -1,7 +1,7 @@
 ﻿FunctionGui
 ===========
 
-.. currentmodule:: magicgui.function_gui
+.. currentmodule:: magicgui.widgets
 
 .. autoclass:: FunctionGui
 
@@ -18,9 +18,6 @@
       
       
       ~FunctionGui.append
-      
-      
-      ~FunctionGui.bind
       
       
       ~FunctionGui.clear
@@ -62,6 +59,9 @@
       ~FunctionGui.render
       
       
+      ~FunctionGui.reset_call_count
+      
+      
       ~FunctionGui.reset_choices
       
       
@@ -73,12 +73,6 @@
       
       ~FunctionGui.shown
       
-      
-      ~FunctionGui.to_signature
-      
-      
-      ~FunctionGui.unbind
-      
    
    
 
@@ -89,17 +83,25 @@
    .. autosummary::
    
       ~FunctionGui.annotation
+      ~FunctionGui.call_count
       ~FunctionGui.enabled
+      ~FunctionGui.height
       ~FunctionGui.label
       ~FunctionGui.labels
       ~FunctionGui.layout
       ~FunctionGui.margins
+      ~FunctionGui.max_height
+      ~FunctionGui.max_width
+      ~FunctionGui.min_height
+      ~FunctionGui.min_width
       ~FunctionGui.native
-      ~FunctionGui.native_layout
       ~FunctionGui.options
+      ~FunctionGui.orientation
       ~FunctionGui.param_kind
       ~FunctionGui.parent
       ~FunctionGui.result_name
+      ~FunctionGui.return_annotation
+      ~FunctionGui.tooltip
       ~FunctionGui.widget_type
       ~FunctionGui.width
    

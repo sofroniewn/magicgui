@@ -14,6 +14,12 @@
    
       
       
+      ~ValueWidget.bind
+      
+      
+      ~ValueWidget.get_value
+      
+      
       ~ValueWidget.hide
       
       
@@ -24,6 +30,9 @@
       
       
       ~ValueWidget.shown
+      
+      
+      ~ValueWidget.unbind
       
    
    
@@ -36,11 +45,17 @@
    
       ~ValueWidget.annotation
       ~ValueWidget.enabled
+      ~ValueWidget.height
       ~ValueWidget.label
+      ~ValueWidget.max_height
+      ~ValueWidget.max_width
+      ~ValueWidget.min_height
+      ~ValueWidget.min_width
       ~ValueWidget.native
       ~ValueWidget.options
       ~ValueWidget.param_kind
       ~ValueWidget.parent
+      ~ValueWidget.tooltip
       ~ValueWidget.value
       ~ValueWidget.widget_type
       ~ValueWidget.width

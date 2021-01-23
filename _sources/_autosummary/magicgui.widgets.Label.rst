@@ -14,6 +14,12 @@
    
       
       
+      ~Label.bind
+      
+      
+      ~Label.get_value
+      
+      
       ~Label.hide
       
       
@@ -24,6 +30,9 @@
       
       
       ~Label.shown
+      
+      
+      ~Label.unbind
       
    
    
@@ -36,11 +45,17 @@
    
       ~Label.annotation
       ~Label.enabled
+      ~Label.height
       ~Label.label
+      ~Label.max_height
+      ~Label.max_width
+      ~Label.min_height
+      ~Label.min_width
       ~Label.native
       ~Label.options
       ~Label.param_kind
       ~Label.parent
+      ~Label.tooltip
       ~Label.value
       ~Label.widget_type
       ~Label.width

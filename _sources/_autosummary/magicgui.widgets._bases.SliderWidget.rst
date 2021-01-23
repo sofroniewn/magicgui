@@ -14,6 +14,12 @@
    
       
       
+      ~SliderWidget.bind
+      
+      
+      ~SliderWidget.get_value
+      
+      
       ~SliderWidget.hide
       
       
@@ -24,6 +30,9 @@
       
       
       ~SliderWidget.shown
+      
+      
+      ~SliderWidget.unbind
       
    
    
@@ -36,15 +45,22 @@
    
       ~SliderWidget.annotation
       ~SliderWidget.enabled
+      ~SliderWidget.height
       ~SliderWidget.label
       ~SliderWidget.max
+      ~SliderWidget.max_height
+      ~SliderWidget.max_width
       ~SliderWidget.min
+      ~SliderWidget.min_height
+      ~SliderWidget.min_width
       ~SliderWidget.native
       ~SliderWidget.options
+      ~SliderWidget.orientation
       ~SliderWidget.param_kind
       ~SliderWidget.parent
       ~SliderWidget.range
       ~SliderWidget.step
+      ~SliderWidget.tooltip
       ~SliderWidget.value
       ~SliderWidget.widget_type
       ~SliderWidget.width

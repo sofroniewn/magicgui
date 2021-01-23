@@ -14,6 +14,12 @@
    
       
       
+      ~ButtonWidget.bind
+      
+      
+      ~ButtonWidget.get_value
+      
+      
       ~ButtonWidget.hide
       
       
@@ -24,6 +30,9 @@
       
       
       ~ButtonWidget.shown
+      
+      
+      ~ButtonWidget.unbind
       
    
    
@@ -36,12 +45,18 @@
    
       ~ButtonWidget.annotation
       ~ButtonWidget.enabled
+      ~ButtonWidget.height
       ~ButtonWidget.label
+      ~ButtonWidget.max_height
+      ~ButtonWidget.max_width
+      ~ButtonWidget.min_height
+      ~ButtonWidget.min_width
       ~ButtonWidget.native
       ~ButtonWidget.options
       ~ButtonWidget.param_kind
       ~ButtonWidget.parent
       ~ButtonWidget.text
+      ~ButtonWidget.tooltip
       ~ButtonWidget.value
       ~ButtonWidget.widget_type
       ~ButtonWidget.width

@@ -30,6 +30,8 @@ Value Widgets
    RangeEdit
    SliceEdit
    DateTimeEdit
+   DateEdit
+   TimeEdit
 
 Button Widgets
 --------------
@@ -62,6 +64,7 @@ Slider Widgets
    Slider
    FloatSlider
    LogSlider
+   ProgressBar
 
 Categorical Widgets
 -------------------
@@ -80,6 +83,7 @@ Container Widgets
    :toctree: ../_autosummary
 
    Container
+   FunctionGui
 
 
 ```

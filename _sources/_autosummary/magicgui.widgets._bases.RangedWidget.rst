@@ -14,6 +14,12 @@
    
       
       
+      ~RangedWidget.bind
+      
+      
+      ~RangedWidget.get_value
+      
+      
       ~RangedWidget.hide
       
       
@@ -24,6 +30,9 @@
       
       
       ~RangedWidget.shown
+      
+      
+      ~RangedWidget.unbind
       
    
    
@@ -36,15 +45,21 @@
    
       ~RangedWidget.annotation
       ~RangedWidget.enabled
+      ~RangedWidget.height
       ~RangedWidget.label
       ~RangedWidget.max
+      ~RangedWidget.max_height
+      ~RangedWidget.max_width
       ~RangedWidget.min
+      ~RangedWidget.min_height
+      ~RangedWidget.min_width
       ~RangedWidget.native
       ~RangedWidget.options
       ~RangedWidget.param_kind
       ~RangedWidget.parent
       ~RangedWidget.range
       ~RangedWidget.step
+      ~RangedWidget.tooltip
       ~RangedWidget.value
       ~RangedWidget.widget_type
       ~RangedWidget.width

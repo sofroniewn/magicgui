@@ -64,9 +64,6 @@
       
       ~SliceEdit.shown
       
-      
-      ~SliceEdit.to_signature
-      
    
    
 
@@ -78,15 +75,22 @@
    
       ~SliceEdit.annotation
       ~SliceEdit.enabled
+      ~SliceEdit.height
       ~SliceEdit.label
       ~SliceEdit.labels
       ~SliceEdit.layout
       ~SliceEdit.margins
+      ~SliceEdit.max_height
+      ~SliceEdit.max_width
+      ~SliceEdit.min_height
+      ~SliceEdit.min_width
       ~SliceEdit.native
-      ~SliceEdit.native_layout
       ~SliceEdit.options
+      ~SliceEdit.orientation
       ~SliceEdit.param_kind
       ~SliceEdit.parent
+      ~SliceEdit.return_annotation
+      ~SliceEdit.tooltip
       ~SliceEdit.value
       ~SliceEdit.widget_type
       ~SliceEdit.width
