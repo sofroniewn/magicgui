@@ -13,9 +13,6 @@
    .. autosummary::
    
       
-      ~FunctionGui.Gui
-      
-      
       
       ~FunctionGui.append
       
@@ -48,9 +45,6 @@
       
       
       ~FunctionGui.pop
-      
-      
-      ~FunctionGui.refresh_choices
       
       
       ~FunctionGui.remove
@@ -102,6 +96,7 @@
       ~FunctionGui.result_name
       ~FunctionGui.return_annotation
       ~FunctionGui.tooltip
+      ~FunctionGui.visible
       ~FunctionGui.widget_type
       ~FunctionGui.width
    

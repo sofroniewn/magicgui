@@ -44,9 +44,6 @@
       ~SliceEdit.pop
       
       
-      ~SliceEdit.refresh_choices
-      
-      
       ~SliceEdit.remove
       
       
@@ -89,9 +86,9 @@
       ~SliceEdit.orientation
       ~SliceEdit.param_kind
       ~SliceEdit.parent
-      ~SliceEdit.return_annotation
       ~SliceEdit.tooltip
       ~SliceEdit.value
+      ~SliceEdit.visible
       ~SliceEdit.widget_type
       ~SliceEdit.width
    

@@ -44,9 +44,6 @@
       ~ContainerWidget.pop
       
       
-      ~ContainerWidget.refresh_choices
-      
-      
       ~ContainerWidget.remove
       
       
@@ -89,8 +86,8 @@
       ~ContainerWidget.orientation
       ~ContainerWidget.param_kind
       ~ContainerWidget.parent
-      ~ContainerWidget.return_annotation
       ~ContainerWidget.tooltip
+      ~ContainerWidget.visible
       ~ContainerWidget.widget_type
       ~ContainerWidget.width
    

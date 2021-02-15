@@ -17,10 +17,16 @@
       ~ProgressBar.bind
       
       
+      ~ProgressBar.decrement
+      
+      
       ~ProgressBar.get_value
       
       
       ~ProgressBar.hide
+      
+      
+      ~ProgressBar.increment
       
       
       ~ProgressBar.render
@@ -62,6 +68,7 @@
       ~ProgressBar.step
       ~ProgressBar.tooltip
       ~ProgressBar.value
+      ~ProgressBar.visible
       ~ProgressBar.widget_type
       ~ProgressBar.width
    

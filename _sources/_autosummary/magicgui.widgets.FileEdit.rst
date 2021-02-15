@@ -44,9 +44,6 @@
       ~FileEdit.pop
       
       
-      ~FileEdit.refresh_choices
-      
-      
       ~FileEdit.remove
       
       
@@ -90,9 +87,9 @@
       ~FileEdit.orientation
       ~FileEdit.param_kind
       ~FileEdit.parent
-      ~FileEdit.return_annotation
       ~FileEdit.tooltip
       ~FileEdit.value
+      ~FileEdit.visible
       ~FileEdit.widget_type
       ~FileEdit.width
    

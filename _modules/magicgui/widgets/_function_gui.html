@@ -7,15 +7,24 @@
 
 <span class=kn >import</span> <span class=nn >inspect</span>
 <span class=kn >import</span> <span class=nn >re</span>
-<span class=kn >import</span> <span class=nn >warnings</span>
+<span class=kn >from</span> <span class=nn >collections</span> <span class=kn >import</span> <span class=n >deque</span>
 <span class=kn >from</span> <span class=nn >contextlib</span> <span class=kn >import</span> <span class=n >contextmanager</span>
 <span class=kn >from</span> <span class=nn >types</span> <span class=kn >import</span> <span class=n >FunctionType</span>
-<span class=kn >from</span> <span class=nn >typing</span> <span class=kn >import</span> <span class=n >TYPE_CHECKING</span><span class=p >,</span> <span class=n >Any</span><span class=p >,</span> <span class=n >Callable</span><span class=p >,</span> <span class=n >Dict</span><span class=p >,</span> <span class=n >Generic</span><span class=p >,</span> <span class=n >Optional</span><span class=p >,</span> <span class=n >TypeVar</span><span class=p >,</span> <span class=n >Union</span>
+<span class=kn >from</span> <span class=nn >typing</span> <span class=kn >import</span> <span class=p >(</span>
+    <span class=n >TYPE_CHECKING</span><span class=p >,</span>
+    <span class=n >Any</span><span class=p >,</span>
+    <span class=n >Callable</span><span class=p >,</span>
+    <span class=n >Deque</span><span class=p >,</span>
+    <span class=n >ForwardRef</span><span class=p >,</span>
+    <span class=n >Generic</span><span class=p >,</span>
+    <span class=n >TypeVar</span><span class=p >,</span>
+    <span class=n >cast</span><span class=p >,</span>
+<span class=p >)</span>
 
 <span class=kn >from</span> <span class=nn >magicgui.application</span> <span class=kn >import</span> <span class=n >AppRef</span>
 <span class=kn >from</span> <span class=nn >magicgui.events</span> <span class=kn >import</span> <span class=n >EventEmitter</span>
 <span class=kn >from</span> <span class=nn >magicgui.signature</span> <span class=kn >import</span> <span class=n >MagicSignature</span><span class=p >,</span> <span class=n >magic_signature</span>
-<span class=kn >from</span> <span class=nn >magicgui.widgets</span> <span class=kn >import</span> <span class=n >Container</span><span class=p >,</span> <span class=n >LineEdit</span><span class=p >,</span> <span class=n >MainWindow</span><span class=p >,</span> <span class=n >PushButton</span>
+<span class=kn >from</span> <span class=nn >magicgui.widgets</span> <span class=kn >import</span> <span class=n >Container</span><span class=p >,</span> <span class=n >LineEdit</span><span class=p >,</span> <span class=n >MainWindow</span><span class=p >,</span> <span class=n >ProgressBar</span><span class=p >,</span> <span class=n >PushButton</span>
 <span class=kn >from</span> <span class=nn >magicgui.widgets._protocols</span> <span class=kn >import</span> <span class=n >ContainerProtocol</span><span class=p >,</span> <span class=n >MainWindowProtocol</span>
 
 <span class=k >if</span> <span class=n >TYPE_CHECKING</span><span class=p >:</span>
@@ -23,7 +32,7 @@
 
 
 <span class=k >def</span> <span class=nf >_inject_tooltips_from_docstrings</span><span class=p >(</span>
-    <span class=n >docstring</span><span class=p >:</span> <span class=n >Optional</span><span class=p >[</span><span class=nb >str</span><span class=p >],</span> <span class=n >param_options</span><span class=p >:</span> <span class=n >Dict</span><span class=p >[</span><span class=nb >str</span><span class=p >,</span> <span class=nb >dict</span><span class=p >]</span>
+    <span class=n >docstring</span><span class=p >:</span> <span class=nb >str</span> <span class=o >|</span> <span class=kc >None</span><span class=p >,</span> <span class=n >param_options</span><span class=p >:</span> <span class=nb >dict</span><span class=p >[</span><span class=nb >str</span><span class=p >,</span> <span class=nb >dict</span><span class=p >]</span>
 <span class=p >):</span>
     <span class=sd >"""Update ``param_options`` dict with tooltips extracted from ``docstring``."""</span>
     <span class=kn >from</span> <span class=nn >docstring_parser</span> <span class=kn >import</span> <span class=n >parse</span>
@@ -74,7 +83,7 @@
 <span class=sd >        Whether tooltips are shown when hovering over widgets. by default True</span>
 <span class=sd >    app : magicgui.Application or str, optional</span>
 <span class=sd >        A backend to use, by default ``None`` (use the default backend.)</span>
-<span class=sd >    show : bool, optional</span>
+<span class=sd >    visible : bool, optional</span>
 <span class=sd >        Whether to immediately show the widget, by default False</span>
 <span class=sd >    auto_call : bool, optional</span>
 <span class=sd >        If True, changing any parameter in either the GUI or the widget attributes</span>
@@ -95,20 +104,19 @@
 <span class=sd >    """</span>
 
     <span class=n >_widget</span><span class=p >:</span> <span class=n >ContainerProtocol</span>
-    <span class=n >__signature__</span><span class=p >:</span> <span class=n >MagicSignature</span>
 
     <span class=k >def</span> <span class=fm >__init__</span><span class=p >(</span>
         <span class=bp >self</span><span class=p >,</span>
         <span class=n >function</span><span class=p >:</span> <span class=n >Callable</span><span class=p >[</span><span class=o >...</span><span class=p >,</span> <span class=n >_R</span><span class=p >],</span>
-        <span class=n >call_button</span><span class=p >:</span> <span class=n >Union</span><span class=p >[</span><span class=nb >bool</span><span class=p >,</span> <span class=nb >str</span><span class=p >]</span> <span class=o >=</span> <span class=kc >False</span><span class=p >,</span>
+        <span class=n >call_button</span><span class=p >:</span> <span class=nb >bool</span> <span class=o >|</span> <span class=nb >str</span> <span class=o >=</span> <span class=kc >False</span><span class=p >,</span>
         <span class=n >layout</span><span class=p >:</span> <span class=nb >str</span> <span class=o >=</span> <span class=s2 >"vertical"</span><span class=p >,</span>
         <span class=n >labels</span><span class=p >:</span> <span class=nb >bool</span> <span class=o >=</span> <span class=kc >True</span><span class=p >,</span>
         <span class=n >tooltips</span><span class=p >:</span> <span class=nb >bool</span> <span class=o >=</span> <span class=kc >True</span><span class=p >,</span>
         <span class=n >app</span><span class=p >:</span> <span class=n >AppRef</span> <span class=o >=</span> <span class=kc >None</span><span class=p >,</span>
-        <span class=n >show</span><span class=p >:</span> <span class=nb >bool</span> <span class=o >=</span> <span class=kc >False</span><span class=p >,</span>
+        <span class=n >visible</span><span class=p >:</span> <span class=nb >bool</span> <span class=o >=</span> <span class=kc >False</span><span class=p >,</span>
         <span class=n >auto_call</span><span class=p >:</span> <span class=nb >bool</span> <span class=o >=</span> <span class=kc >False</span><span class=p >,</span>
         <span class=n >result_widget</span><span class=p >:</span> <span class=nb >bool</span> <span class=o >=</span> <span class=kc >False</span><span class=p >,</span>
-        <span class=n >param_options</span><span class=p >:</span> <span class=n >Optional</span><span class=p >[</span><span class=n >Dict</span><span class=p >[</span><span class=nb >str</span><span class=p >,</span> <span class=nb >dict</span><span class=p >]]</span> <span class=o >=</span> <span class=kc >None</span><span class=p >,</span>
+        <span class=n >param_options</span><span class=p >:</span> <span class=nb >dict</span><span class=p >[</span><span class=nb >str</span><span class=p >,</span> <span class=nb >dict</span><span class=p >]</span> <span class=o >|</span> <span class=kc >None</span> <span class=o >=</span> <span class=kc >None</span><span class=p >,</span>
         <span class=n >name</span><span class=p >:</span> <span class=nb >str</span> <span class=o >=</span> <span class=kc >None</span><span class=p >,</span>
         <span class=o >**</span><span class=n >kwargs</span><span class=p >,</span>
     <span class=p >):</span>
@@ -142,28 +150,45 @@
         <span class=p >)</span>
 
         <span class=n >sig</span> <span class=o >=</span> <span class=n >magic_signature</span><span class=p >(</span><span class=n >function</span><span class=p >,</span> <span class=n >gui_options</span><span class=o >=</span><span class=n >param_options</span><span class=p >)</span>
+        <span class=bp >self</span><span class=o >.</span><span class=n >return_annotation</span> <span class=o >=</span> <span class=n >sig</span><span class=o >.</span><span class=n >return_annotation</span>
         <span class=nb >super</span><span class=p >()</span><span class=o >.</span><span class=fm >__init__</span><span class=p >(</span>
             <span class=n >layout</span><span class=o >=</span><span class=n >layout</span><span class=p >,</span>
             <span class=n >labels</span><span class=o >=</span><span class=n >labels</span><span class=p >,</span>
+            <span class=n >visible</span><span class=o >=</span><span class=n >visible</span><span class=p >,</span>
             <span class=n >widgets</span><span class=o >=</span><span class=nb >list</span><span class=p >(</span><span class=n >sig</span><span class=o >.</span><span class=n >widgets</span><span class=p >(</span><span class=n >app</span><span class=p >)</span><span class=o >.</span><span class=n >values</span><span class=p >()),</span>
-            <span class=n >return_annotation</span><span class=o >=</span><span class=n >sig</span><span class=o >.</span><span class=n >return_annotation</span><span class=p >,</span>
             <span class=n >name</span><span class=o >=</span><span class=n >name</span> <span class=ow >or</span> <span class=bp >self</span><span class=o >.</span><span class=n >_callable_name</span><span class=p >,</span>
         <span class=p >)</span>
-
         <span class=bp >self</span><span class=o >.</span><span class=n >_param_options</span> <span class=o >=</span> <span class=n >param_options</span>
         <span class=bp >self</span><span class=o >.</span><span class=n >called</span> <span class=o >=</span> <span class=n >EventEmitter</span><span class=p >(</span><span class=bp >self</span><span class=p >,</span> <span class=nb >type</span><span class=o >=</span><span class=s2 >"called"</span><span class=p >)</span>
         <span class=bp >self</span><span class=o >.</span><span class=n >_result_name</span> <span class=o >=</span> <span class=s2 >""</span>
         <span class=bp >self</span><span class=o >.</span><span class=n >_call_count</span><span class=p >:</span> <span class=nb >int</span> <span class=o >=</span> <span class=mi >0</span>
 
-        <span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span><span class=p >:</span> <span class=n >Optional</span><span class=p >[</span><span class=n >PushButton</span><span class=p >]</span> <span class=o >=</span> <span class=kc >None</span>
+        <span class=c1 ># a deque of Progressbars to be created by (possibly nested) tqdm_mgui iterators</span>
+        <span class=bp >self</span><span class=o >.</span><span class=n >_tqdm_pbars</span><span class=p >:</span> <span class=n >Deque</span><span class=p >[</span><span class=n >ProgressBar</span><span class=p >]</span> <span class=o >=</span> <span class=n >deque</span><span class=p >()</span>
+        <span class=c1 ># the nesting level of tqdm_mgui iterators in a given __call__</span>
+        <span class=bp >self</span><span class=o >.</span><span class=n >_tqdm_depth</span><span class=p >:</span> <span class=nb >int</span> <span class=o >=</span> <span class=mi >0</span>
+
+        <span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span><span class=p >:</span> <span class=n >PushButton</span> <span class=o >|</span> <span class=kc >None</span> <span class=o >=</span> <span class=kc >None</span>
         <span class=k >if</span> <span class=n >call_button</span><span class=p >:</span>
             <span class=n >text</span> <span class=o >=</span> <span class=n >call_button</span> <span class=k >if</span> <span class=nb >isinstance</span><span class=p >(</span><span class=n >call_button</span><span class=p >,</span> <span class=nb >str</span><span class=p >)</span> <span class=k >else</span> <span class=s2 >"Run"</span>
             <span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span> <span class=o >=</span> <span class=n >PushButton</span><span class=p >(</span><span class=n >gui_only</span><span class=o >=</span><span class=kc >True</span><span class=p >,</span> <span class=n >text</span><span class=o >=</span><span class=n >text</span><span class=p >,</span> <span class=n >name</span><span class=o >=</span><span class=s2 >"call_button"</span><span class=p >)</span>
             <span class=k >if</span> <span class=ow >not</span> <span class=n >auto_call</span><span class=p >:</span>  <span class=c1 ># (otherwise it already gets called)</span>
-                <span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span><span class=o >.</span><span class=n >changed</span><span class=o >.</span><span class=n >connect</span><span class=p >(</span><span class=k >lambda</span> <span class=n >e</span><span class=p >:</span> <span class=bp >self</span><span class=o >.</span><span class=fm >__call__</span><span class=p >())</span>
+
+                <span class=k >def</span> <span class=nf >_disable_button_and_call</span><span class=p >(</span><span class=n >val</span><span class=p >):</span>
+                    <span class=c1 ># disable the call button until the function has finished</span>
+                    <span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span> <span class=o >=</span> <span class=n >cast</span><span class=p >(</span><span class=n >PushButton</span><span class=p >,</span> <span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span><span class=p >)</span>
+                    <span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span><span class=o >.</span><span class=n >enabled</span> <span class=o >=</span> <span class=kc >False</span>
+                    <span class=n >t</span><span class=p >,</span> <span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span><span class=o >.</span><span class=n >text</span> <span class=o >=</span> <span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span><span class=o >.</span><span class=n >text</span><span class=p >,</span> <span class=s2 >"Running..."</span>
+                    <span class=k >try</span><span class=p >:</span>
+                        <span class=bp >self</span><span class=o >.</span><span class=fm >__call__</span><span class=p >()</span>
+                    <span class=k >finally</span><span class=p >:</span>
+                        <span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span><span class=o >.</span><span class=n >text</span> <span class=o >=</span> <span class=n >t</span>
+                        <span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span><span class=o >.</span><span class=n >enabled</span> <span class=o >=</span> <span class=kc >True</span>
+
+                <span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span><span class=o >.</span><span class=n >changed</span><span class=o >.</span><span class=n >connect</span><span class=p >(</span><span class=n >_disable_button_and_call</span><span class=p >)</span>
             <span class=bp >self</span><span class=o >.</span><span class=n >append</span><span class=p >(</span><span class=bp >self</span><span class=o >.</span><span class=n >_call_button</span><span class=p >)</span>
 
-        <span class=bp >self</span><span class=o >.</span><span class=n >_result_widget</span><span class=p >:</span> <span class=n >Optional</span><span class=p >[</span><span class=n >LineEdit</span><span class=p >]</span> <span class=o >=</span> <span class=kc >None</span>
+        <span class=bp >self</span><span class=o >.</span><span class=n >_result_widget</span><span class=p >:</span> <span class=n >LineEdit</span> <span class=o >|</span> <span class=kc >None</span> <span class=o >=</span> <span class=kc >None</span>
         <span class=k >if</span> <span class=n >result_widget</span><span class=p >:</span>
             <span class=bp >self</span><span class=o >.</span><span class=n >_result_widget</span> <span class=o >=</span> <span class=n >LineEdit</span><span class=p >(</span><span class=n >gui_only</span><span class=o >=</span><span class=kc >True</span><span class=p >,</span> <span class=n >name</span><span class=o >=</span><span class=s2 >"result"</span><span class=p >)</span>
             <span class=bp >self</span><span class=o >.</span><span class=n >_result_widget</span><span class=o >.</span><span class=n >enabled</span> <span class=o >=</span> <span class=kc >False</span>
@@ -172,9 +197,6 @@
         <span class=bp >self</span><span class=o >.</span><span class=n >_auto_call</span> <span class=o >=</span> <span class=n >auto_call</span>
         <span class=k >if</span> <span class=n >auto_call</span><span class=p >:</span>
             <span class=bp >self</span><span class=o >.</span><span class=n >changed</span><span class=o >.</span><span class=n >connect</span><span class=p >(</span><span class=k >lambda</span> <span class=n >e</span><span class=p >:</span> <span class=bp >self</span><span class=o >.</span><span class=fm >__call__</span><span class=p >())</span>
-
-        <span class=k >if</span> <span class=n >show</span><span class=p >:</span>
-            <span class=bp >self</span><span class=o >.</span><span class=n >show</span><span class=p >()</span>
 
     <span class=nd >@property</span>
     <span class=k >def</span> <span class=nf >call_count</span><span class=p >(</span><span class=bp >self</span><span class=p >)</span> <span class=o >-&gt;</span> <span class=nb >int</span><span class=p >:</span>
@@ -185,21 +207,30 @@
         <span class=sd >"""Reset the call count to 0."""</span>
         <span class=bp >self</span><span class=o >.</span><span class=n >_call_count</span> <span class=o >=</span> <span class=mi >0</span>
 
-    <span class=k >def</span> <span class=fm >__getattr__</span><span class=p >(</span><span class=bp >self</span><span class=p >,</span> <span class=n >value</span><span class=p >):</span>
-        <span class=sd >"""Catch deprecated _name_changed attribute."""</span>
-        <span class=k >if</span> <span class=n >value</span><span class=o >.</span><span class=n >endswith</span><span class=p >(</span><span class=s2 >"_changed"</span><span class=p >):</span>
-            <span class=n >widget_name</span> <span class=o >=</span> <span class=n >value</span><span class=o >.</span><span class=n >replace</span><span class=p >(</span><span class=s2 >"_changed"</span><span class=p >,</span> <span class=s2 >""</span><span class=p >)</span>
-            <span class=n >warnings</span><span class=o >.</span><span class=n >warn</span><span class=p >(</span>
-                <span class=s2 >"</span><span class=se >\n</span><span class=s2 >The `&lt;name&gt;_changed` signal has been removed in magicgui 0.2.0.</span><span class=se >\n</span><span class=s2 >"</span>
-                <span class=sa >f</span><span class=s2 >"Use 'widget.</span><span class=si >{</span><span class=n >widget_name</span><span class=si >}</span><span class=s2 >.changed' instead of 'widget.</span><span class=si >{</span><span class=n >value</span><span class=si >}</span><span class=s2 >'"</span><span class=p >,</span>
-                <span class=ne >FutureWarning</span><span class=p >,</span>
-            <span class=p >)</span>
-            <span class=k >return</span> <span class=nb >getattr</span><span class=p >(</span><span class=bp >self</span><span class=p >,</span> <span class=n >widget_name</span><span class=p >)</span><span class=o >.</span><span class=n >changed</span>
-        <span class=k >return</span> <span class=nb >super</span><span class=p >()</span><span class=o >.</span><span class=fm >__getattr__</span><span class=p >(</span><span class=n >value</span><span class=p >)</span>
-
-    <span class=c1 ># def __delitem__(self, key: Union[int, slice]):</span>
+    <span class=c1 ># def __delitem__(self, key: int | slice):</span>
     <span class=c1 >#     """Delete a widget by integer or slice index."""</span>
     <span class=c1 >#     raise AttributeError("can't delete items from a FunctionGui")</span>
+
+    <span class=nd >@property</span>
+    <span class=k >def</span> <span class=nf >return_annotation</span><span class=p >(</span><span class=bp >self</span><span class=p >):</span>
+        <span class=sd >"""Return annotation to use when converting to :class:`inspect.Signature`.</span>
+
+<span class=sd >        ForwardRefs will be resolve when setting the annotation.</span>
+<span class=sd >        """</span>
+        <span class=k >return</span> <span class=bp >self</span><span class=o >.</span><span class=n >_return_annotation</span>
+
+    <span class=nd >@return_annotation</span><span class=o >.</span><span class=n >setter</span>
+    <span class=k >def</span> <span class=nf >return_annotation</span><span class=p >(</span><span class=bp >self</span><span class=p >,</span> <span class=n >value</span><span class=p >):</span>
+        <span class=k >if</span> <span class=nb >isinstance</span><span class=p >(</span><span class=n >value</span><span class=p >,</span> <span class=p >(</span><span class=nb >str</span><span class=p >,</span> <span class=n >ForwardRef</span><span class=p >)):</span>
+            <span class=kn >from</span> <span class=nn >magicgui.type_map</span> <span class=kn >import</span> <span class=n >_evaluate_forwardref</span>
+
+            <span class=n >value</span> <span class=o >=</span> <span class=n >_evaluate_forwardref</span><span class=p >(</span><span class=n >value</span><span class=p >)</span>
+        <span class=bp >self</span><span class=o >.</span><span class=n >_return_annotation</span> <span class=o >=</span> <span class=n >value</span>
+
+    <span class=nd >@property</span>
+    <span class=k >def</span> <span class=nf >__signature__</span><span class=p >(</span><span class=bp >self</span><span class=p >)</span> <span class=o >-&gt;</span> <span class=n >MagicSignature</span><span class=p >:</span>
+        <span class=sd >"""Return a MagicSignature object representing the current state of the gui."""</span>
+        <span class=k >return</span> <span class=nb >super</span><span class=p >()</span><span class=o >.</span><span class=n >__signature__</span><span class=o >.</span><span class=n >replace</span><span class=p >(</span><span class=n >return_annotation</span><span class=o >=</span><span class=bp >self</span><span class=o >.</span><span class=n >return_annotation</span><span class=p >)</span>
 
     <span class=k >def</span> <span class=fm >__call__</span><span class=p >(</span><span class=bp >self</span><span class=p >,</span> <span class=o >*</span><span class=n >args</span><span class=p >:</span> <span class=n >Any</span><span class=p >,</span> <span class=o >**</span><span class=n >kwargs</span><span class=p >:</span> <span class=n >Any</span><span class=p >)</span> <span class=o >-&gt;</span> <span class=n >_R</span><span class=p >:</span>
         <span class=sd >"""Call the original function with the current parameter values from the Gui.</span>
@@ -242,6 +273,7 @@
 
         <span class=n >bound</span><span class=o >.</span><span class=n >apply_defaults</span><span class=p >()</span>
 
+        <span class=bp >self</span><span class=o >.</span><span class=n >_tqdm_depth</span> <span class=o >=</span> <span class=mi >0</span>  <span class=c1 ># reset the tqdm stack count</span>
         <span class=k >with</span> <span class=n >_function_name_pointing_to_widget</span><span class=p >(</span><span class=bp >self</span><span class=p >):</span>
             <span class=n >value</span> <span class=o >=</span> <span class=bp >self</span><span class=o >.</span><span class=n >_function</span><span class=p >(</span><span class=o >*</span><span class=n >bound</span><span class=o >.</span><span class=n >args</span><span class=p >,</span> <span class=o >**</span><span class=n >bound</span><span class=o >.</span><span class=n >kwargs</span><span class=p >)</span>
 
@@ -250,7 +282,7 @@
             <span class=k >with</span> <span class=bp >self</span><span class=o >.</span><span class=n >_result_widget</span><span class=o >.</span><span class=n >changed</span><span class=o >.</span><span class=n >blocker</span><span class=p >():</span>
                 <span class=bp >self</span><span class=o >.</span><span class=n >_result_widget</span><span class=o >.</span><span class=n >value</span> <span class=o >=</span> <span class=n >value</span>
 
-        <span class=n >return_type</span> <span class=o >=</span> <span class=bp >self</span><span class=o >.</span><span class=n >return_annotation</span>
+        <span class=n >return_type</span> <span class=o >=</span> <span class=n >sig</span><span class=o >.</span><span class=n >return_annotation</span>
         <span class=k >if</span> <span class=n >return_type</span><span class=p >:</span>
             <span class=kn >from</span> <span class=nn >magicgui.type_map</span> <span class=kn >import</span> <span class=n >_type2callback</span>
 
@@ -261,7 +293,7 @@
 
     <span class=k >def</span> <span class=fm >__repr__</span><span class=p >(</span><span class=bp >self</span><span class=p >)</span> <span class=o >-&gt;</span> <span class=nb >str</span><span class=p >:</span>
         <span class=sd >"""Return string representation of instance."""</span>
-        <span class=k >return</span> <span class=sa >f</span><span class=s2 >"&lt;FunctionGui </span><span class=si >{</span><span class=bp >self</span><span class=o >.</span><span class=n >_callable_name</span><span class=si >}{</span><span class=bp >self</span><span class=o >.</span><span class=n >__signature__</span><span class=si >}</span><span class=s2 >&gt;"</span>
+        <span class=k >return</span> <span class=sa >f</span><span class=s2 >"&lt;</span><span class=si >{</span><span class=nb >type</span><span class=p >(</span><span class=bp >self</span><span class=p >)</span><span class=o >.</span><span class=vm >__name__</span><span class=si >}</span><span class=s2 > </span><span class=si >{</span><span class=bp >self</span><span class=o >.</span><span class=n >_callable_name</span><span class=si >}{</span><span class=bp >self</span><span class=o >.</span><span class=n >__signature__</span><span class=si >}</span><span class=s2 >&gt;"</span>
 
     <span class=nd >@property</span>
     <span class=k >def</span> <span class=nf >result_name</span><span class=p >(</span><span class=bp >self</span><span class=p >)</span> <span class=o >-&gt;</span> <span class=nb >str</span><span class=p >:</span>
@@ -286,7 +318,7 @@
             <span class=n >app</span><span class=o >=</span><span class=kc >None</span><span class=p >,</span>
         <span class=p >)</span>
 
-    <span class=n >_bound_instances</span><span class=p >:</span> <span class=n >Dict</span><span class=p >[</span><span class=nb >int</span><span class=p >,</span> <span class=n >FunctionGui</span><span class=p >]</span> <span class=o >=</span> <span class=p >{}</span>
+    <span class=n >_bound_instances</span><span class=p >:</span> <span class=nb >dict</span><span class=p >[</span><span class=nb >int</span><span class=p >,</span> <span class=n >FunctionGui</span><span class=p >]</span> <span class=o >=</span> <span class=p >{}</span>
 
     <span class=k >def</span> <span class=fm >__get__</span><span class=p >(</span><span class=bp >self</span><span class=p >,</span> <span class=n >obj</span><span class=p >,</span> <span class=n >objtype</span><span class=o >=</span><span class=kc >None</span><span class=p >)</span> <span class=o >-&gt;</span> <span class=n >FunctionGui</span><span class=p >:</span>
         <span class=sd >"""Provide descriptor protocol.</span>
@@ -324,21 +356,7 @@
 
     <span class=k >def</span> <span class=fm >__set__</span><span class=p >(</span><span class=bp >self</span><span class=p >,</span> <span class=n >obj</span><span class=p >,</span> <span class=n >value</span><span class=p >):</span>
         <span class=sd >"""Prevent setting a magicgui attribute."""</span>
-        <span class=k >raise</span> <span class=ne >AttributeError</span><span class=p >(</span><span class=s2 >"Can't set magicgui attribute"</span><span class=p >)</span>
-
-    <span class=k >def</span> <span class=nf >Gui</span><span class=p >(</span><span class=bp >self</span><span class=p >,</span> <span class=n >show</span><span class=o >=</span><span class=kc >False</span><span class=p >):</span>
-        <span class=sd >"""Create a widget instance [DEPRECATED]."""</span>
-        <span class=n >warnings</span><span class=o >.</span><span class=n >warn</span><span class=p >(</span>
-            <span class=s2 >"</span><span class=se >\n\n</span><span class=s2 >Creating a widget instance with `my_function.Gui()` is deprecated,</span><span class=se >\n</span><span class=s2 >"</span>
-            <span class=s2 >"the magicgui decorator now returns a widget instance directly, so you</span><span class=se >\n</span><span class=s2 >"</span>
-            <span class=s2 >"should simply use the function itself as a magicgui widget, or call</span><span class=se >\n</span><span class=s2 >"</span>
-            <span class=s2 >"`my_function.show(run=True)` to run the application.</span><span class=se >\n</span><span class=s2 >"</span>
-            <span class=s2 >"In a future version, the `Gui` attribute will be removed.</span><span class=se >\n</span><span class=s2 >"</span><span class=p >,</span>
-            <span class=ne >FutureWarning</span><span class=p >,</span>
-        <span class=p >)</span>
-        <span class=k >if</span> <span class=n >show</span><span class=p >:</span>
-            <span class=bp >self</span><span class=o >.</span><span class=n >show</span><span class=p >()</span>
-        <span class=k >return</span> <span class=bp >self</span></div>
+        <span class=k >raise</span> <span class=ne >AttributeError</span><span class=p >(</span><span class=s2 >"Can't set magicgui attribute"</span><span class=p >)</span></div>
 
 
 <span class=k >class</span> <span class=nc >MainFunctionGui</span><span class=p >(</span><span class=n >FunctionGui</span><span class=p >[</span><span class=n >_R</span><span class=p >],</span> <span class=n >MainWindow</span><span class=p >):</span>
@@ -349,7 +367,7 @@
     <span class=k >def</span> <span class=fm >__init__</span><span class=p >(</span><span class=bp >self</span><span class=p >,</span> <span class=n >function</span><span class=p >:</span> <span class=n >Callable</span><span class=p >,</span> <span class=o >*</span><span class=n >args</span><span class=p >,</span> <span class=o >**</span><span class=n >kwargs</span><span class=p >):</span>
         <span class=nb >super</span><span class=p >()</span><span class=o >.</span><span class=fm >__init__</span><span class=p >(</span><span class=n >function</span><span class=p >,</span> <span class=o >*</span><span class=n >args</span><span class=p >,</span> <span class=o >**</span><span class=n >kwargs</span><span class=p >)</span>
         <span class=bp >self</span><span class=o >.</span><span class=n >create_menu_item</span><span class=p >(</span><span class=s2 >"Help"</span><span class=p >,</span> <span class=s2 >"Documentation"</span><span class=p >,</span> <span class=n >callback</span><span class=o >=</span><span class=bp >self</span><span class=o >.</span><span class=n >_show_docs</span><span class=p >)</span>
-        <span class=bp >self</span><span class=o >.</span><span class=n >_help_text_edit</span><span class=p >:</span> <span class=n >Optional</span><span class=p >[</span><span class=n >TextEdit</span><span class=p >]</span> <span class=o >=</span> <span class=kc >None</span>
+        <span class=bp >self</span><span class=o >.</span><span class=n >_help_text_edit</span><span class=p >:</span> <span class=n >TextEdit</span> <span class=o >|</span> <span class=kc >None</span> <span class=o >=</span> <span class=kc >None</span>
 
     <span class=k >def</span> <span class=nf >_show_docs</span><span class=p >(</span><span class=bp >self</span><span class=p >):</span>
         <span class=k >if</span> <span class=ow >not</span> <span class=bp >self</span><span class=o >.</span><span class=n >_help_text_edit</span><span class=p >:</span>
@@ -447,4 +465,4 @@
             <span class=n >function</span><span class=o >.</span><span class=vm >__closure__</span><span class=p >[</span><span class=n >idx</span><span class=p >]</span><span class=o >.</span><span class=n >cell_contents</span> <span class=o >=</span> <span class=n >original_value</span>
     <span class=k >else</span><span class=p >:</span>
         <span class=k >yield</span>
-</pre></div> </article> </div> </div> </main> </div> <footer class=md-footer > <div class=md-footer-nav > <nav class="md-footer-nav__inner md-grid"> </a> </nav> </div> <div class="md-footer-meta md-typeset"> <div class="md-footer-meta__inner md-grid"> <div class=md-footer-copyright > <div class=md-footer-copyright__highlight > &#169; Copyright 2020. </div> Created using <a href="http://www.sphinx-doc.org/">Sphinx</a> 3.4.3. and <a href="https://jupyterbook.org/index.html">Jupyter Book</a> and <a href="https://github.com/bashtage/sphinx-material/">Material for Sphinx</a> </div> </div> </div> </footer> <script src="../../../_static/javascripts/application.js"></script> <script>app.initialize({version: "1.0.4", url: {base: ".."}})</script>
+</pre></div> </article> </div> </div> </main> </div> <footer class=md-footer > <div class=md-footer-nav > <nav class="md-footer-nav__inner md-grid"> </a> </nav> </div> <div class="md-footer-meta md-typeset"> <div class="md-footer-meta__inner md-grid"> <div class=md-footer-copyright > <div class=md-footer-copyright__highlight > &#169; Copyright 2020. </div> Created using <a href="http://www.sphinx-doc.org/">Sphinx</a> 3.5.0. and <a href="https://jupyterbook.org/index.html">Jupyter Book</a> and <a href="https://github.com/bashtage/sphinx-material/">Material for Sphinx</a> </div> </div> </div> </footer> <script src="../../../_static/javascripts/application.js"></script> <script>app.initialize({version: "1.0.4", url: {base: ".."}})</script>

@@ -44,9 +44,6 @@
       ~RangeEdit.pop
       
       
-      ~RangeEdit.refresh_choices
-      
-      
       ~RangeEdit.remove
       
       
@@ -89,9 +86,9 @@
       ~RangeEdit.orientation
       ~RangeEdit.param_kind
       ~RangeEdit.parent
-      ~RangeEdit.return_annotation
       ~RangeEdit.tooltip
       ~RangeEdit.value
+      ~RangeEdit.visible
       ~RangeEdit.widget_type
       ~RangeEdit.width
    
